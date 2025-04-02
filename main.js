@@ -8,22 +8,30 @@ let port;
 let parser;
 
 function connectSerial() {
-    try {
-        port = new SerialPort(portPath, { baudRate }, (err) => {
-            if (err) {
-                console.error(`⚠️ Serial Port Error: ${err.message}`);
-                console.log('⏳ Retrying connection in 5 seconds...');
-                setTimeout(connectSerial, 5000);
-            } else {
-                console.log('✅ Serial Port Opened');
-                setupParser();
-            }
-        });
-    } catch (error) {
-        console.error(`❌ Failed to initialize serial port: ${error.message}`);
-        console.log('⏳ Retrying connection in 5 seconds...');
+    console.log('Attempting to connect to serial port...');
+    port = new SerialPort(portPath, { baudRate, autoOpen: false });
+
+    port.open((err) => {
+        if (err) {
+            console.error(`Serial Port Error: ${err.message}`);
+            console.log('Retrying connection in 5 seconds...');
+            setTimeout(connectSerial, 5000);
+        } else {
+            console.log('Serial Port Opened');
+            setupParser();
+        }
+    });
+
+    port.on('close', () => {
+        console.log('Serial Port Closed. Reconnecting...');
         setTimeout(connectSerial, 5000);
-    }
+    });
+
+    port.on('error', (err) => {
+        console.error(`Serial Port Error: ${err.message}`);
+        console.log('Reconnecting in 5 seconds...');
+        setTimeout(connectSerial, 5000);
+    });
 }
 
 function setupParser() {
@@ -31,35 +39,25 @@ function setupParser() {
 
     parser.on('data', (data) => {
         if (parseInt(data) === 1) {
-            console.log('🚨 Reboot Triggered!');
             rebootSystem();
         } else {
-            console.log('❌ Invalid Data');
+            console.log('Invalid Data:', data);
         }
-    });
-
-    port.on('error', (err) => {
-        console.error('❌ Serial Port Error:', err);
-        console.log('🔄 Reconnecting...');
-        setTimeout(connectSerial, 5000);
     });
 }
 
 function rebootSystem() {
-    console.log('⚠️ Rebooting Ubuntu 24...');
-    exec('sudo reboot', (error, stdout, stderr) => {
+    exec('ls', (error, stdout, stderr) => {
         if (error) {
-            console.error(`❌ Error: ${error.message}`);
+            console.error(`Error: ${error.message}`);
             return;
         }
         if (stderr) {
-            console.error(`⚠️ Warning: ${stderr}`);
+            console.error(`Warning: ${stderr}`);
             return;
         }
-        console.log(`✅ Success: ${stdout}`);
+        console.log(`Success: ${stdout}`);
     });
 }
 
-// Start connection attempt
 connectSerial();
-console.log('🚀 Program is running. Waiting for Serial Device...');
