@@ -8,10 +8,10 @@ const port = new SerialPort('/dev/ttyACM0', {
 const parser = port.pipe(new Readline({ delimiter: '\n' }));
 
 parser.on('data', (data) => {
-    if (data === 1) {
-        console.log('✅ Factory Reset Successful');
+    if (parseInt(data) === 1) {
+        console.log('Factory Reset Successful');
     } else {
-        console.log('❌ Factory Reset Failed');
+        console.log('Factory Reset Failed');
     }
 });
 
@@ -20,5 +20,5 @@ port.on('open', () => {
 });
 
 port.on('error', (err) => {
-    console.error('❌ Serial Port Error:', err);
+    console.error('Serial Port Error:', err);
 });
