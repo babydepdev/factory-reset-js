@@ -8,12 +8,10 @@ const port = new SerialPort('/dev/ttyACM0', {
 const parser = port.pipe(new Readline({ delimiter: '\n' }));
 
 parser.on('data', (data) => {
-    if (data === 1) { 
+    if (data === 1) {
         console.log('✅ Factory Reset Successful');
-        process.exit(0);
     } else {
         console.log('❌ Factory Reset Failed');
-        process.exit(1);
     }
 });
 
