@@ -39,14 +39,14 @@ function setupParser() {
 
     parser.on('data', (data) => {
         if (parseInt(data) === 1) {
-            rebootSystem();
+            controlSystem();
         } else {
             console.log('Invalid Data:', data);
         }
     });
 }
 
-function rebootSystem() {
+function controlSystem() {
     exec('ls', (error, stdout, stderr) => {
         if (error) {
             console.error(`Error: ${error.message}`);
